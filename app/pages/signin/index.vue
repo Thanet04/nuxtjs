@@ -11,22 +11,56 @@ export default {
     methods: {
         async signIn() {
             if (!this.email || !this.password) {
-                alert('Please fill in all fields');
+                window.alert('Please fill in all fields');
                 return;
             }
-            
+
             this.isLoading = true;
             console.log('signIn', { email: this.email, password: this.password });
+
+            try {
+            const response = await fetch('http://localhost:5098/api/Auth/login', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({
+                    email: this.email,
+                    password: this.password
+                })
+            });
+
+            if (!response.ok) {
+                throw new Error('Invalid credentials');
+            }
+
+            const data = await response.json();
+            console.log('Login success:', data);
             
-            // Simulate API call
-            setTimeout(() => {
+            localStorage.setItem('user', JSON.stringify({
+                email: this.email,
+                avatar: 'https://i.pravatar.cc/150?u=' + this.email,
+                token: data.token
+            }))
+
+            this.isLoading = false;
+
+            window.alert('Login successful!');
+
+            this.$router.push('/');
+            } catch (error) {
+                console.error(error);
                 this.isLoading = false;
-            }, 2000);
+                window.alert('Login failed: ' + error.message);
+            }
         },
+        
+
         togglePasswordVisibility() {
             this.showPassword = !this.showPassword;
         }
     }
+
 }
 </script>
 

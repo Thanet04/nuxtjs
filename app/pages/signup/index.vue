@@ -13,18 +13,18 @@ export default {
   methods: {
     async signUp() {
       if (this.password !== this.confirmPassword) {
-        alert('Passwords do not match!');
+        window.alert('Passwords do not match!');
         return;
       }
 
       try {
-        const response = await fetch('http://localhost:3000/api/signup', {
+        const response = await fetch('http://localhost:5098/api/Auth/register', {
           method: 'POST',
           headers: {
             'Content-Type': 'application/json'
           },
           body: JSON.stringify({
-            name: this.name,
+            fullName: this.name,
             email: this.email,
             password: this.password
           })
@@ -36,10 +36,11 @@ export default {
 
         const data = await response.json();
         console.log('Signup success:', data);
-        alert('Signup successful!');
+        window.alert('Signup successful!');
+        this.$router.push('/signup');
       } catch (error) {
         console.error(error);
-        alert('Error during signup');
+        window.alert('Error during signup');
       }
     },
 
