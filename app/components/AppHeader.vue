@@ -1,23 +1,38 @@
-<script setup>
-import { ref, onMounted } from 'vue'
-import { useRouter } from 'vue-router'
-
-  const user = ref(null)
-  const router = useRouter()
-
-  onMounted(() => {
-    const storedUser = localStorage.getItem('user')
-    if (storedUser) {
-      user.value = JSON.parse(storedUser)
+<script>
+export default {
+  data() {
+    return {
+      user: null,
+      showMenu: false
     }
-  })
+  },
+  mounted() {
+    this.loadUser();
 
-  function logout() {
-    localStorage.removeItem('user')
-    user.value = null
-    window.alert('Logged out!')
-    router.push('/signin') 
+    window.addEventListener('user-updated', this.loadUser);
+  },
+  beforeUnmount() {
+    window.removeEventListener('user-updated', this.loadUser);
+  },
+  methods: {
+    loadUser(){
+      const storedUser = localStorage.getItem('user')
+      if (storedUser) {
+        this.user = JSON.parse(storedUser)
+      }
+    },
+    toggleMenu() {
+      this.showMenu = !this.showMenu
+      console.log(this.showMenu)
+    },
+    logout() {
+      localStorage.removeItem('user')
+      this.user = null
+      window.alert('Logged out!')
+      this.$router.push('/signin')
+    }
   }
+}
 </script>
 
 <template>
@@ -29,14 +44,15 @@ import { useRouter } from 'vue-router'
     </div>
 
     <!-- ถ้า login แล้ว -->
-    <div v-if="user" class="flex items-center gap-3">
-      <UCollapsible class="flex flex-col gap-2">
-        <UAvatar
-          :src="user.avatar || 'https://i.pravatar.cc/150?u=' + user.email"
-          size="md"
-        />
-        <UButton color="red" variant="ghost" size="sm" @click="logout">Logout</UButton>
-      </UCollapsible>
+    <div v-if="user" class="relative flex items-center gap-3">
+      <UAvatar :src="user.avatar || 'https://i.pravatar.cc/150?u=' + user.email"
+        size="md" class="cursor-pointer" @click="toggleMenu" />
+
+      <!-- Dropdown Menu -->
+      <div v-if="showMenu" class="absolute top-full right-0 mt-2 flex flex-col gap-2 bg-white text-black p-2 rounded shadow-lg" >
+        <UButton class="hover:bg-gray-200 cursor-pointer" color="blue" variant="ghost" size="md">Profile</UButton>
+        <UButton class="hover:bg-gray-200 cursor-pointer" color="red" variant="ghost" size="md" @click="logout">Logout</UButton>
+      </div>
     </div>
 
     <div v-else class="flex gap-2">

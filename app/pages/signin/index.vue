@@ -43,6 +43,7 @@ export default {
                 token: data.token
             }))
 
+            window.dispatchEvent(new Event('user-updated'));
             this.isLoading = false;
 
             window.alert('Login successful!');
