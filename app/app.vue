@@ -10,8 +10,10 @@ export default {
 </script>
 
 <template>
-  <div>
+  <div class="h-screen flex flex-col">
     <AppHeader v-if="!isAuthPage"/>
-    <NuxtPage />
+    <main class="flex-1">
+      <NuxtPage />
+    </main>
   </div>
 </template>

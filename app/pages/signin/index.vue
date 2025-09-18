@@ -2,30 +2,42 @@
 export default {
     data() {
         return {
-            email: '',
+            userid: '',
+            username: '',
             password: '',
             showPassword: false,
             isLoading: false
         }
     },
     methods: {
+        getUserIdFromToken(token) {
+      try {
+        const payload = token.split('.')[1]
+        const decoded = atob(payload)
+        const parsed = JSON.parse(decoded)
+        return parsed.id
+      } catch (err) {
+        console.error('Invalid token', err)
+        return null
+      }
+    },
         async signIn() {
-            if (!this.email || !this.password) {
+            if (!this.username || !this.password) {
                 window.alert('Please fill in all fields');
                 return;
             }
 
             this.isLoading = true;
-            console.log('signIn', { email: this.email, password: this.password });
+            console.log('signIn', { username: this.username, password: this.password });
 
             try {
-            const response = await fetch('http://localhost:5098/api/Auth/login', {
+            const response = await fetch('http://localhost:8080/api/auth/login', {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json'
                 },
                 body: JSON.stringify({
-                    email: this.email,
+                    username: this.username,
                     password: this.password
                 })
             });
@@ -35,11 +47,13 @@ export default {
             }
 
             const data = await response.json();
+            const userId = this.getUserIdFromToken(data.token)
             console.log('Login success:', data);
             
             localStorage.setItem('user', JSON.stringify({
-                email: this.email,
-                avatar: 'https://i.pravatar.cc/150?u=' + this.email,
+                userid: userId,
+                username: this.username,
+                avatar: 'https://i.pravatar.cc/150?u=',
                 token: data.token
             }))
 
@@ -84,9 +98,9 @@ export default {
 
                 <!-- Form -->
                 <form @submit.prevent="signIn" class="space-y-6">
-                    <!-- Email Field -->
+                    <!-- username Field -->
                     <div class="space-y-2">
-                        <label class="text-sm font-medium text-gray-700">Email Address</label>
+                        <label class="text-sm font-medium text-gray-700">Username</label>
                         <div class="relative">
                             <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
                                 <svg class="h-5 w-5 text-black" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -94,10 +108,10 @@ export default {
                                 </svg>
                             </div>
                             <input 
-                                type="email" 
-                                placeholder="Enter your email" 
+                                type="username" 
+                                placeholder="Enter your username" 
                                 class="w-full pl-10 pr-4 py-3 text-black border border-black rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-200 bg-white/50 backdrop-blur-sm" 
-                                v-model="email"
+                                v-model="username"
                                 required
                             >
                         </div>
