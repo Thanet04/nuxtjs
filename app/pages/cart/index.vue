@@ -8,15 +8,6 @@ export default {
     }
   },
   async mounted() {
-    // โหลด userId จาก localStorage
-    const storedUser = JSON.parse(localStorage.getItem('user') || '{}')
-    this.userId = storedUser.userid || null
-
-    if (!this.userId) {
-      alert('กรุณาเข้าสู่ระบบ')
-      return
-    }
-
     await this.loadOrders()
   },
   computed: {
@@ -28,14 +19,20 @@ export default {
     }
   },
   methods: {
-    async loadOrders() {
-      this.isLoading = true
+  getAuthHeader() {
+    const user = JSON.parse(localStorage.getItem('user'))
+    return { 'Authorization': `Bearer ${user.token}`, 'Content-Type': 'application/json' }
+  },
+
+  async loadOrders() {
+    this.isLoading = true
       try {
-        const res = await fetch(`http://localhost:8080/api/users/${this.userId}/orders`)
+        const res = await fetch(`http://localhost:8080/api/orders`, {
+          headers: this.getAuthHeader()
+        })
         if (!res.ok) throw new Error('โหลดคำสั่งซื้อไม่สำเร็จ')
         const data = await res.json()
 
-        // Map จาก order ตาม structure ใหม่
         this.items = data.map(o => ({
           id: o.id,
           title: o.title || 'ไม่มีชื่อหนังสือ',
@@ -45,39 +42,41 @@ export default {
         }))
       } catch (err) {
         console.error(err)
-        alert('โหลดคำสั่งซื้อไม่สำเร็จ')
+        this.$swal.fire({
+          title: 'โหลดคำสั่งซื้อไม่สำเร็จ', 
+          icon: 'warning',
+          confirmButtonText: 'OK',
+        });
       } finally {
         this.isLoading = false
       }
     },
-    async increase(item) {
-      item.quantity++
-      await this.updateOrder(item)
-    },
-    async decrease(item) {
-      if (item.quantity > 1) {
-        item.quantity--
-        await this.updateOrder(item)
-      }
-    },
+
     async removeItem(index) {
       const item = this.items[index]
       try {
-        const res = await fetch(`http://localhost:8080/api/users/${this.userId}/orders/${item.id}`, {
-          method: 'DELETE'
+        const res = await fetch(`http://localhost:8080/api/orders/${item.id}`, {
+          method: 'DELETE',
+          headers: this.getAuthHeader()
         })
         if (!res.ok) throw new Error('ลบไม่สำเร็จ')
         this.items.splice(index, 1)
       } catch (err) {
         console.error(err)
-        alert(err.message)
+        this.$swal.fire({
+          title: 'ลบไม่สำเร็จ', 
+          icon: 'error',
+          confirmButtonText: 'OK',
+        });
       }
     },
+
     async clearCart() {
       for (const item of [...this.items]) {
         try {
-          await fetch(`http://localhost:8080/api/users/${this.userId}/orders/${item.id}`, {
-            method: 'DELETE'
+          await fetch(`http://localhost:8080/api/orders/${item.id}`, {
+            method: 'DELETE',
+            headers: this.getAuthHeader()
           })
         } catch (err) {
           console.error(err)
@@ -85,20 +84,24 @@ export default {
       }
       this.items = []
     },
+
     async updateOrder(item) {
       try {
-        await fetch(`http://localhost:8080/api/users/${this.userId}/orders/${item.id}`, {
+        await fetch(`http://localhost:8080/api/orders/${item.id}`, {
           method: 'PUT',
-          headers: { 'Content-Type': 'application/json' },
+          headers: this.getAuthHeader(),
           body: JSON.stringify({
             title: item.title,
             quantity: item.quantity,
-            price: item.price,
-            user: { id: this.userId }
+            price: item.price
           })
         })
       } catch (err) {
-        console.error('อัปเดตคำสั่งซื้อไม่สำเร็จ', err)
+        this.$swal.fire({
+          title: 'อัปเดตคำสั่งซื้อไม่สำเร็จ', 
+          icon: 'error',
+          confirmButtonText: 'OK',
+        });
       }
     }
   }

@@ -10,4 +10,7 @@ export default defineNuxtConfig({
       tailwindcss(),
     ],
   },
+  plugins:[
+    '~/plugins/sweetalert2',
+  ]
 });

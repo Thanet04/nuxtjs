@@ -11,19 +11,23 @@ export default {
     },
     methods: {
         getUserIdFromToken(token) {
-      try {
-        const payload = token.split('.')[1]
-        const decoded = atob(payload)
-        const parsed = JSON.parse(decoded)
-        return parsed.id
-      } catch (err) {
-        console.error('Invalid token', err)
-        return null
-      }
-    },
+        try {
+            const payload = token.split('.')[1]
+            const decoded = atob(payload)
+            const parsed = JSON.parse(decoded)
+            return parsed.id
+        } catch (err) {
+            console.error('Invalid token', err)
+            return null
+        }
+        },
         async signIn() {
             if (!this.username || !this.password) {
-                window.alert('Please fill in all fields');
+                this.$swal.fire({
+                    title: 'กรุณากรอกข้อมูลให้ครบถ้วน',
+                    icon: 'warning',
+                    confirmButtonText: 'OK'
+                });
                 return;
             }
 
@@ -60,13 +64,22 @@ export default {
             window.dispatchEvent(new Event('user-updated'));
             this.isLoading = false;
 
-            window.alert('Login successful!');
-
-            this.$router.push('/');
+            this.$swal.fire({
+                title: 'เข้าสู่ระบบสำเร็จ',
+                icon: 'success',
+                confirmButtonText: 'OK',
+            }).then(() => {
+                this.$router.push('/');
+            });
             } catch (error) {
                 console.error(error);
                 this.isLoading = false;
-                window.alert('Login failed: ' + error.message);
+                this.$swal.fire({
+                    title: 'เข้าสู่ระบบล้มเหลว', 
+                    text: error.message, 
+                    icon: 'error',
+                    confirmButtonText: 'OK',
+                });
             }
         },
         

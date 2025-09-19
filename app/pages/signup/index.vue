@@ -2,7 +2,8 @@
 export default {
   data() {
     return {
-      name: '',
+      username: '',
+      fullName: '',
       email: '',
       password: '',
       confirmPassword: '',
@@ -13,9 +14,22 @@ export default {
   methods: {
     async signUp() {
       if (this.password !== this.confirmPassword) {
-        window.alert('Passwords do not match!');
+        this.$swal.fire({
+            title: 'รหัสผ่านไม่ตรงกัน', 
+            icon: 'warning',
+            confirmButtonText: 'OK'
+        });
         return;
       }
+
+      if (!this.username || !this.email || !this.password || !this.confirmPassword) {
+        this.$swal.fire({
+            title: 'กรุณากรอกข้อมูลให้ครบถ้วน', 
+            icon: 'warning',
+            confirmButtonText: 'OK'
+        });
+        return;
+    }
 
       try {
         const response = await fetch('http://localhost:8080/api/auth/register', {
@@ -24,7 +38,8 @@ export default {
             'Content-Type': 'application/json'
           },
           body: JSON.stringify({
-            fullName: this.name,
+            username: this.username,
+            fullName: this.fullname,
             email: this.email,
             password: this.password
           })
@@ -36,11 +51,22 @@ export default {
 
         const data = await response.json();
         console.log('Signup success:', data);
-        window.alert('Signup successful!');
-        this.$router.push('/signup');
+        this.$swal.fire({
+            title: 'สมัครสมาชิกสำเร็จ', 
+            text: 'คุณสามารถเข้าสู่ระบบได้แล้ว!',
+            icon: 'success',
+            confirmButtonText: 'OK'
+        }).then(() => {
+            this.$router.push('/login');
+        });
       } catch (error) {
         console.error(error);
-        window.alert('Error during signup');
+        this.$swal.fire({
+            title: 'เกิดข้อผิดพลาดในการสมัครสมาชิก', 
+            text: error.message || 'โปรดลองใหม่อีกครั้ง',
+            icon: 'error',
+            confirmButtonText: 'OK'
+        });
       }
     },
 
@@ -76,6 +102,25 @@ export default {
         <form @submit.prevent="signUp" class="space-y-6">
           <!-- Name Field -->
           <div class="space-y-2">
+            <label class="text-sm font-medium text-gray-700">Username</label>
+            <div class="relative">
+              <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                <svg class="h-5 w-5 text-black" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"></path>
+                </svg>
+              </div>
+              <input 
+                type="text" 
+                placeholder="Enter your Username" 
+                class="w-full pl-10 pr-4 py-3 text-black border border-black rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-200 bg-white/50 backdrop-blur-sm" 
+                v-model="username"
+                required
+              >
+            </div>
+          </div>
+
+          <!-- Full Name Field -->
+          <div class="space-y-2">
             <label class="text-sm font-medium text-gray-700">Full Name</label>
             <div class="relative">
               <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
@@ -87,7 +132,7 @@ export default {
                 type="text" 
                 placeholder="Enter your full name" 
                 class="w-full pl-10 pr-4 py-3 text-black border border-black rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-200 bg-white/50 backdrop-blur-sm" 
-                v-model="name"
+                v-model="fullname"
                 required
               >
             </div>

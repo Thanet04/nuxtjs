@@ -3,35 +3,47 @@ export default {
   data() {
     return {
       books: [],
-      userId: null,
+      user: null,
       isLoading: false,
       error: null
     }
   },
   mounted() {
-    const storedUser = JSON.parse(localStorage.getItem('user') || '{}')
-    this.userId = storedUser.userid || null
     this.loadBooks()
   },
   methods: {
+    getAuthHeader() {
+      const user = JSON.parse(localStorage.getItem('user'))
+      return { 'Authorization': `Bearer ${user.token}`, 'Content-Type': 'application/json' }
+    },
+
     async loadBooks() {
       this.isLoading = true
       this.error = null
       try {
-        const response = await fetch('http://localhost:8080/api/books')
-        if (!response.ok) throw new Error('ไม่สามารถดึงข้อมูลหนังสือได้')
+        const response = await fetch('http://localhost:8080/api/books/me', {
+          headers: this.getAuthHeader()
+        })
+        if (!response.ok) throw new Error('ไม่มีหนังสือ')
         this.books = await response.json()
       } catch (err) {
         console.error(err)
-        this.error = err.message
+        this.$swal.fire({
+          title: "ไม่มีหนังสือ",
+          icon: "warning",
+          confirmButtonText: 'OK',
+        })
       } finally {
         this.isLoading = false
       }
     },
     async addToCart(book) {
-      if (!this.userId) {
-        alert('กรุณาเข้าสู่ระบบก่อนเพิ่มลงตะกร้า')
-        return
+      if (!this.user) {
+        this.$swal.fire({
+          title: 'กรุณาเข้าสู่ระบบก่อนเพิ่มลงตะกร้า',
+          icon: 'warning',
+          confirmButtonText: 'OK',
+        })
       }
       try {
         const orderDTO = {
@@ -41,11 +53,9 @@ export default {
           price: book.price || 0
         }
 
-        const res = await fetch(`http://localhost:8080/api/users/${this.userId}/orders`, {
+        const res = await fetch('http://localhost:8080/api/orders', {
           method: 'POST',
-          headers: {
-            'Content-Type': 'application/json'
-          },
+          headers: this.getAuthHeader(),
           body: JSON.stringify(orderDTO)
         })
 
@@ -53,16 +63,24 @@ export default {
 
         const data = await res.json()
         console.log('Order created:', data)
-        alert('เพิ่มลงตะกร้าเรียบร้อยแล้ว!')
+        this.$swal.fire({
+          title: 'เพิ่มลงตะกร้าเรียบร้อยแล้ว!',
+          icon: 'success',
+          confirmButtonText: 'Cool',
+        });
+        window.dispatchEvent(new Event('cart-updated')) // อัปเดต cart count
       } catch (err) {
         console.error(err)
-        alert(err.message)
+        this.$swal.fire({
+          title: 'ไม่สามารถเพิ่มลงตะกร้าได้', 
+          icon: 'warning',
+          confirmButtonText: 'OK',
+        });
       }
     }
   }
 }
 </script>
-
 <template>
   <div class="max-w-6xl mx-auto p-6">
     <div class="flex items-center justify-between mb-6">

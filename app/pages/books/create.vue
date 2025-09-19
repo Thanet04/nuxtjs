@@ -4,6 +4,7 @@ export default {
     return {
       title: '',
       author: '',
+      description: '',
       price: '',
       coverPreview: '',
       coverFile: null,
@@ -11,6 +12,10 @@ export default {
     }
   },
   methods: {
+    getAuthHeader() {
+      const user = JSON.parse(localStorage.getItem('user'))
+      return { 'Authorization': `Bearer ${user.token}`, 'Content-Type': 'application/json' }
+    },
     onFileChange(event) {
       const file = event.target.files && event.target.files[0]
       if (!file) return
@@ -38,6 +43,7 @@ export default {
         const book = {
           title: this.title,
           author: this.author,
+          description: this.description,
           price: Number(this.price)
         }
 
@@ -48,6 +54,7 @@ export default {
 
         const response = await fetch('http://localhost:8080/api/books', {
           method: 'POST',
+          headers: this.getAuthHeader(),
           body: formData
         })
 
@@ -66,7 +73,7 @@ export default {
 }
 </script>
 <template>
-  <div class="max-w-xl mx-auto p-6">
+  <div class="max-w-xl mx-auto p-6 bg-white rounded-xl">
     <h1 class="text-2xl font-bold mb-6 bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent">
       📚 สร้างหนังสือใหม่
     </h1>
@@ -74,40 +81,51 @@ export default {
     <form class="space-y-5" @submit.prevent="save">
       <!-- Title -->
       <div>
-        <label class="block text-lg font-medium text-white mb-1">ชื่อหนังสือ</label>
+        <label class="block text-lg font-medium text-black mb-1">ชื่อหนังสือ</label>
         <input
           v-model="title"
           type="text"
           placeholder="กรอกชื่อหนังสือ"
-          class="w-full px-3 py-2 border border-gray-300 rounded-lg shadow-sm focus:ring-2 focus:ring-blue-500 focus:outline-none"
+          class="w-full px-3 py-2 text-black border border-gray-300 rounded-lg shadow-sm focus:ring-2 focus:ring-blue-500 focus:outline-none"
         />
       </div>
 
       <!-- Author -->
       <div>
-        <label class="block text-lg font-medium text-white mb-1">ผู้เขียน</label>
+        <label class="block text-lg font-medium text-black mb-1">ผู้เขียน</label>
         <input
           v-model="author"
           type="text"
           placeholder="กรอกชื่อผู้เขียน"
-          class="w-full px-3 py-2 border border-gray-300 rounded-lg shadow-sm focus:ring-2 focus:ring-blue-500 focus:outline-none"
+          class="w-full px-3 py-2 border text-black border-gray-300 rounded-lg shadow-sm focus:ring-2 focus:ring-blue-500 focus:outline-none"
+        />
+      </div>
+
+      <!-- Description -->
+      <div>
+        <label class="block text-lg font-medium text-black mb-1">รายละเอียด</label>
+        <textarea
+          v-model="description"
+          type="text"
+          placeholder="กรุณากรอกรายละเอียด"
+          class="w-full px-3 py-2 text-black border border-gray-300 rounded-lg shadow-sm focus:ring-2 focus:ring-blue-500 focus:outline-none"
         />
       </div>
 
       <!-- Price -->
       <div>
-        <label class="block text-lg font-medium text-white mb-1">ราคา</label>
+        <label class="block text-lg font-medium text-black mb-1">ราคา</label>
         <input
           v-model="price"
           type="number"
           placeholder="0"
-          class="w-full px-3 py-2 border border-gray-300 rounded-lg shadow-sm focus:ring-2 focus:ring-blue-500 focus:outline-none"
+          class="w-full px-3 py-2 text-black border border-gray-300 rounded-lg shadow-sm focus:ring-2 focus:ring-blue-500 focus:outline-none"
         />
       </div>
 
       <!-- Cover Upload -->
       <div>
-        <label class="block text-lg font-medium text-white mb-1">รูปปกหนังสือ</label>
+        <label class="block text-lg font-medium text-black mb-1">รูปปกหนังสือ</label>
         <input
           type="file"
           accept="image/*"

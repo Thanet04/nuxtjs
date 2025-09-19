@@ -7,55 +7,73 @@ export default {
       newPassword: '',
       confirmNewPassword: '',
       message: '',
-      messageType: '',
-      userId: null
+      messageType: ''
     }
   },
   async mounted() {
-    const storedUser = JSON.parse(localStorage.getItem('user') || '{}')
-    if (storedUser?.userid) {
-      this.userId = storedUser.userid
-      try {
-        const res = await fetch(`http://localhost:8080/api/user/${this.userId}`)
-        if (!res.ok) throw new Error('Failed to fetch user data')
-        const data = await res.json()
-        this.user.username = data.username
-        this.user.email = data.email
-      } catch (err) {
-        console.error(err)
-        this.message = 'ไม่สามารถโหลดข้อมูลผู้ใช้ได้'
-        this.messageType = 'error'
-      }
+    try {
+      const res = await fetch('http://localhost:8080/api/user/me', {
+        headers: this.getAuthHeader()
+      })
+      if (!res.ok) throw new Error('Failed to fetch user data')
+      const data = await res.json()
+      this.user.username = data.username
+      this.user.email = data.email
+    } catch (err) {
+      console.error(err)
+      this.$swal.fire({
+        title: 'ไม่สามารถโหลดข้อมูลผู้ใช้ได้', 
+        text: err.message, 
+        icon: 'error',
+        confirmButtonText: 'OK',
+      });
     }
   },
   methods: {
+    getAuthHeader() {
+      const storedUser = JSON.parse(localStorage.getItem('user') || '{}')
+      return { 'Authorization': `Bearer ${storedUser.token}`, 'Content-Type': 'application/json' }
+    },
+
     async saveProfile() {
       try {
-        const res = await fetch(`http://localhost:8080/api/user/${this.userId}`, {
+        const res = await fetch('http://localhost:8080/api/user/me', {
           method: 'PUT',
-          headers: { 'Content-Type': 'application/json' },
+          headers: this.getAuthHeader(),
           body: JSON.stringify({ username: this.user.username, email: this.user.email })
         })
         if (!res.ok) throw new Error('Update failed')
-        this.message = 'อัปเดตโปรไฟล์สำเร็จ'
-        this.messageType = 'success'
+        this.$swal.fire({
+          title: 'อัปเดตโปรไฟล์สำเร็จ', 
+          text: err.message, 
+          icon: 'success',
+          confirmButtonText: 'OK',
+        });
       } catch (err) {
         console.error(err)
-        this.message = 'เกิดข้อผิดพลาดในการอัปเดต'
-        this.messageType = 'error'
+        this.$swal.fire({
+            title: 'เกิดข้อผิดพลาดในการอัปเดต', 
+            text: err.message, 
+            icon: 'error',
+            confirmButtonText: 'OK',
+          });
       }
     },
+
     async changePassword() {
       if (this.newPassword !== this.confirmNewPassword) {
-        this.message = 'รหัสผ่านใหม่ไม่ตรงกัน'
-        this.messageType = 'error'
-        return
+        this.$swal.fire({
+          title: 'รหัสผ่านใหม่ไม่ตรงกัน', 
+          text: err.message, 
+          icon: 'warning',
+          confirmButtonText: 'OK',
+        });
       }
 
       try {
-        const res = await fetch(`http://localhost:8080/api/user/${this.userId}/change-password`, {
+        const res = await fetch('http://localhost:8080/api/user/me/change-password', {
           method: 'PUT',
-          headers: { 'Content-Type': 'application/json' },
+          headers: this.getAuthHeader(),
           body: JSON.stringify({
             currentPassword: this.currentPassword,
             newPassword: this.newPassword
@@ -67,26 +85,62 @@ export default {
         this.newPassword = ''
         this.confirmNewPassword = ''
         this.message = 'เปลี่ยนรหัสผ่านสำเร็จ'
-        this.messageType = 'success'
+        this.$swal.fire({
+          title: 'เปลี่ยนรหัสผ่านสำเร็จ', 
+          text: err.message, 
+          icon: 'success',
+          confirmButtonText: 'OK',
+        });
       } catch (err) {
         console.error(err)
-        this.message = 'เกิดข้อผิดพลาดในการเปลี่ยนรหัสผ่าน'
-        this.messageType = 'error'
+        this.$swal.fire({
+          title: 'เกิดข้อผิดพลาดในการเปลี่ยนรหัสผ่าน', 
+          text: err.message, 
+          icon: 'error',
+          confirmButtonText: 'OK',
+        });
       }
     },
+
     async deleteAccount() {
-      if (!confirm('คุณแน่ใจว่าต้องการลบบัญชี?')) return
+      const result = await this.$swal.fire({
+        title: 'คุณแน่ใจว่าต้องการลบบัญชี?', 
+        text: 'การลบบัญชีจะไม่สามารถกู้คืนได้!', 
+        icon: 'warning',
+        showCancelButton: true,
+        confirmButtonText: 'ตกลง', 
+        cancelButtonText: 'ยกเลิก',
+        reverseButtons: true, 
+      });
+
+      if (!result.isConfirmed) {
+        return;
+      }
+
       try {
-        const res = await fetch(`http://localhost:8080/api/user/${this.userId}`, {
-          method: 'DELETE'
-        })
-        if (!res.ok) throw new Error('Delete failed')
-        localStorage.removeItem('user')
-        alert('ลบบัญชีสำเร็จ')
-        this.$router.push('/signup')
+        const res = await fetch('http://localhost:8080/api/user/me', {
+          method: 'DELETE',
+          headers: this.getAuthHeader(),
+        });
+        if (!res.ok) throw new Error('Delete failed');
+        localStorage.removeItem('user');
+
+        this.$swal.fire({
+          title: 'บัญชีถูกลบแล้ว', 
+          icon: 'success',
+          confirmButtonText: 'OK',
+        }).then(() => {
+          this.$router.push('/signup');
+        });
+
       } catch (err) {
-        console.error(err)
-        alert('เกิดข้อผิดพลาดในการลบบัญชี')
+        console.error(err);
+        this.$swal.fire({
+          title: 'เกิดข้อผิดพลาดในการลบบัญชี', 
+          text: err.message,
+          icon: 'error',
+          confirmButtonText: 'OK',
+        });
       }
     }
   }
