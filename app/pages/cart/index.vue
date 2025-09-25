@@ -54,36 +54,80 @@ export default {
 
     async removeItem(index) {
       const item = this.items[index]
+      const result = await this.$swal.fire({
+        title: 'คุณแน่ใจหรือไม่?',
+        text: `ต้องการลบ "${item.title}" ออกจากตะกร้าใช่ไหม?`,
+        icon: 'warning',
+        showCancelButton: true,
+        confirmButtonText: 'ตกลง',
+        cancelButtonText: 'ยกเลิก',
+      })
+
+      if (!result.isConfirmed) return 
+
       try {
         const res = await fetch(`http://localhost:8080/api/orders/${item.id}`, {
           method: 'DELETE',
           headers: this.getAuthHeader()
         })
         if (!res.ok) throw new Error('ลบไม่สำเร็จ')
+
         this.items.splice(index, 1)
+
+        window.dispatchEvent(new Event('cart-updated'))
+
+        this.$swal.fire({
+          title: 'ลบสินค้าสำเร็จ',
+          icon: 'success',
+          confirmButtonText: 'OK',
+        })
       } catch (err) {
         console.error(err)
         this.$swal.fire({
-          title: 'ลบไม่สำเร็จ', 
+          title: 'ลบไม่สำเร็จ',
           icon: 'error',
           confirmButtonText: 'OK',
-        });
+        })
       }
     },
 
     async clearCart() {
-      for (const item of [...this.items]) {
-        try {
+      const result = await this.$swal.fire({
+        title: 'คุณแน่ใจหรือไม่?',
+        text: 'ต้องการล้างตะกร้าทั้งหมดหรือไม่?',
+        icon: 'warning',
+        showCancelButton: true,
+        confirmButtonText: 'ใช่, ล้างเลย',
+        cancelButtonText: 'ยกเลิก',
+      })
+
+      if (!result.isConfirmed) return
+
+      try {
+        for (const item of [...this.items]) {
           await fetch(`http://localhost:8080/api/orders/${item.id}`, {
             method: 'DELETE',
             headers: this.getAuthHeader()
           })
-        } catch (err) {
-          console.error(err)
         }
+        this.items = []
+
+        window.dispatchEvent(new Event('cart-updated'))
+        this.$swal.fire({
+          title: 'ล้างตะกร้าเรียบร้อย',
+          icon: 'success',
+          confirmButtonText: 'OK',
+        })
+      } catch (err) {
+        console.error(err)
+        this.$swal.fire({
+          title: 'เกิดข้อผิดพลาดในการล้างตะกร้า',
+          icon: 'error',
+          confirmButtonText: 'OK',
+        })
       }
-      this.items = []
     },
+
 
     async updateOrder(item) {
       try {
@@ -103,6 +147,10 @@ export default {
           confirmButtonText: 'OK',
         });
       }
+    },
+
+    checkout(){
+      this.$router.push('/checkout')
     }
   }
 }
@@ -153,7 +201,7 @@ export default {
           >
             ล้างตะกร้า
           </button>
-          <button class="px-4 py-2 bg-green-600 text-white rounded-lg cursor-pointer">
+          <button @click="checkout" class="px-4 py-2 bg-green-600 text-white rounded-lg cursor-pointer">
             ชำระเงิน
           </button>
         </div>

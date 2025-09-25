@@ -14,7 +14,7 @@ export default {
   methods: {
     getAuthHeader() {
       const user = JSON.parse(localStorage.getItem('user'))
-      return { 'Authorization': `Bearer ${user.token}`, 'Content-Type': 'application/json' }
+      return { 'Authorization': `Bearer ${user.token}` }
     },
     onFileChange(event) {
       const file = event.target.files && event.target.files[0]
@@ -33,8 +33,11 @@ export default {
     },
     async save() {
       if (!this.title || !this.author || !this.price) {
-        window.alert('กรุณากรอกข้อมูลให้ครบถ้วน')
-        return
+        this.$swal.fire({
+          title: 'กรุณากรอกข้อมูลให้ครบ', 
+          icon: 'warning',
+          confirmButtonText: 'OK',
+        });
       }
 
       this.isLoading = true
@@ -59,12 +62,20 @@ export default {
         })
 
         if (!response.ok) throw new Error('ไม่สามารถบันทึกหนังสือได้')
-
-        window.alert('บันทึกหนังสือสำเร็จ!')
-        this.$router.push('/books')
+        this.$swal.fire({
+          title: 'บันทึกหนังสือสำเร็จ', 
+          icon: 'success',
+          confirmButtonText: 'OK',
+        }).then(() => {
+            this.$router.push('/books');
+        });
       } catch (err) {
         console.error(err)
-        window.alert(err.message)
+         this.$swal.fire({
+          title: 'ไม่สามารถบันทึกหนังสือได้', 
+          icon: 'warning',
+          confirmButtonText: 'OK',
+        });
       } finally {
         this.isLoading = false
       }

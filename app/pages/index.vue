@@ -5,30 +5,72 @@ export default {
       books: [],
       user: null,
       isLoading: false,
-      error: null
+      error: null,
+      page: 1,
+      size: 12,
+      total: 0
+    }
+  },
+  computed: {
+    pageCount() {
+      return Math.ceil(this.total / this.size)
+    },
+    startItem() {
+      if (this.total === 0) return 0
+      return (this.page - 1) * this.size + 1
+    },
+    endItem() {
+      return Math.min(this.page * this.size, this.total)
+    }
+  },
+  watch: {
+    page(newPage, oldPage) {
+      if (newPage && newPage !== oldPage) {
+        this.loadBooks()
+      }
+    },
+    size() {
+      this.page = 1
+      this.loadBooks()
     }
   },
   mounted() {
+    this.loadUser()
     this.loadBooks()
   },
   methods: {
     getAuthHeader() {
-      const user = JSON.parse(localStorage.getItem('user'))
+      const userRaw = localStorage.getItem('user')
+      if (!userRaw) return {}
+      const user = JSON.parse(userRaw)
       return { 'Authorization': `Bearer ${user.token}`, 'Content-Type': 'application/json' }
     },
-    async loadBooks(){
+    loadUser() {
+      const storedUser = localStorage.getItem('user')
+      if (storedUser) {
+        this.user = JSON.parse(storedUser)
+      }
+    },
+    async loadBooks() {
       this.isLoading = true
       this.error = null
+
       try {
-        const response = await fetch('http://localhost:8080/api/books', {
-        })
+        const pageIndex = Math.max(0, (this.page || 1) - 1)
+        const url = `http://localhost:8080/api/books?page=${pageIndex}&size=${this.size}`
+
+        const response = await fetch(url, { method: 'GET' })
         if (!response.ok) throw new Error('ไม่มีหนังสือ')
-        this.books = await response.json()
+
+        const data = await response.json()
+        this.books = data.books || data
+        this.total = data.total || (Array.isArray(data) ? data.length : 0)
+
       } catch (err) {
-        console.error(err)
+        this.error = err.message
         this.$swal.fire({
-          title: 'Error!',
-          text: err.message, 
+          title: 'เกิดข้อผิดพลาด!',
+          text: err.message,
           icon: 'error',
           confirmButtonText: 'OK',
         });
@@ -43,6 +85,7 @@ export default {
           icon: 'warning',
           confirmButtonText: 'OK',
         })
+        return
       }
       try {
         const orderDTO = {
@@ -61,18 +104,15 @@ export default {
 
         if (!res.ok) throw new Error('ไม่สามารถเพิ่มลงตะกร้าได้')
 
-        const data = await res.json()
-        console.log('Order created:', data)
         this.$swal.fire({
           title: 'เพิ่มลงตะกร้าเรียบร้อยแล้ว!',
           icon: 'success',
-          confirmButtonText: 'Cool',
+          confirmButtonText: 'OK',
         });
         window.dispatchEvent(new Event('cart-updated'))
-      } catch (err) {
-        console.error(err)
+      } catch {
         this.$swal.fire({
-          title: 'ไม่สามารถเพิ่มลงตะกร้าได้', 
+          title: 'ไม่สามารถเพิ่มลงตะกร้าได้',
           icon: 'warning',
           confirmButtonText: 'OK',
         });
@@ -81,6 +121,7 @@ export default {
   }
 }
 </script>
+
 <template>
   <div class="w-full h-full">
     <img src="../assets/img/bannerbook.png" class="w-full h-100 object-cover" alt="Banner Image">
@@ -120,6 +161,45 @@ export default {
         </div>
       </div>
     </div>
+
+    <div class="flex flex-col items-center gap-2 my-4">
+      <div class="flex justify-center gap-2">
+        <button 
+          @click="page = Math.max(1, page - 1)"
+          :disabled="page <= 1"
+          class="px-4 py-2 bg-blue-500 text-white rounded disabled:opacity-50 disabled:cursor-not-allowed"
+        >
+          ← Previous
+        </button>
+        
+        <div class="flex items-center gap-1">
+          <button 
+            v-for="p in pageCount" 
+            :key="p"
+            @click="page = p"
+            :class="[page === p ? 'bg-green-500 text-white' : 'bg-gray-200 text-gray-700 hover:bg-gray-300', 'px-3 py-2 rounded']"
+          >
+            {{ p }}
+          </button>
+        </div>
+        
+        <button 
+          @click="page = Math.min(pageCount, page + 1)"
+          :disabled="page >= pageCount"
+          class="px-4 py-2 bg-blue-500 text-white rounded disabled:opacity-50 disabled:cursor-not-allowed"
+        >
+          Next →
+        </button>
+      </div>
+
+      <div class="text-gray-500">
+        <template v-if="total > 0">
+          แสดง {{ startItem }}–{{ endItem }} จาก {{ total }} รายการ
+        </template>
+        <template v-else>
+          ไม่พบรายการ
+        </template>
+      </div>
+    </div>
   </div>
 </template>
-  

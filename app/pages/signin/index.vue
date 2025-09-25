@@ -164,10 +164,7 @@ export default {
 
                     <!-- Remember Me & Forgot Password -->
                     <div class="flex items-center justify-between">
-                        <label class="flex items-center">
-                            <input type="checkbox" class="rounded border-gray-300 text-blue-600 shadow-sm focus:border-blue-300 focus:ring focus:ring-blue-200 focus:ring-opacity-50">
-                            <span class="ml-2 text-sm text-gray-600">Remember me</span>
-                        </label>
+                        <div></div>
                         <NuxtLink class="text-sm text-blue-600 hover:text-blue-500 transition-colors duration-200" to="/forgot_password">Forgot password ?</NuxtLink>
                     </div>
 
