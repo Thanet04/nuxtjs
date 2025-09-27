@@ -12,7 +12,7 @@ export default {
   },
   async mounted() {
     try {
-      const res = await fetch('http://localhost:8080/api/user/me', {
+      const res = await fetch('https://book-production-e730.up.railway.app/api/user/me', {
         headers: this.getAuthHeader()
       })
       if (!res.ok) throw new Error('Failed to fetch user data')
@@ -38,7 +38,7 @@ export default {
 
     async saveProfile() {
       try {
-        const res = await fetch('http://localhost:8080/api/user/me', {
+        const res = await fetch('https://book-production-e730.up.railway.app/api/user/me', {
           method: 'PUT',
           headers: this.getAuthHeader(),
           body: JSON.stringify({
@@ -75,7 +75,7 @@ export default {
       }
 
       try {
-        const res = await fetch('http://localhost:8080/api/user/me/change-password', {
+        const res = await fetch('https://book-production-e730.up.railway.app/api/user/me/change-password', {
           method: 'PUT',
           headers: this.getAuthHeader(),
           body: JSON.stringify({
@@ -120,7 +120,7 @@ export default {
       if (!result.isConfirmed) return;
 
       try {
-        const res = await fetch('http://localhost:8080/api/user/me', {
+        const res = await fetch('https://book-production-e730.up.railway.app/api/user/me', {
           method: 'DELETE',
           headers: this.getAuthHeader(),
         });

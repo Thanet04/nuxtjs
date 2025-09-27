@@ -35,7 +35,7 @@ export default {
             console.log('signIn', { username: this.username, password: this.password });
 
             try {
-            const response = await fetch('http://localhost:8080/api/auth/login', {
+            const response = await fetch('https://book-production-e730.up.railway.app/api/auth/login', {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json'

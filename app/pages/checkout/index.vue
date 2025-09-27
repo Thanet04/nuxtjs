@@ -24,7 +24,7 @@ export default {
         if (!userRaw) return
         const token = JSON.parse(userRaw).token
 
-        const res = await fetch('http://localhost:8080/api/orders', {
+        const res = await fetch('https://book-production-e730.up.railway.app/api/orders', {
           headers: { 'Authorization': `Bearer ${token}` }
         })
         if (!res.ok) throw new Error('ไม่สามารถโหลดคำสั่งซื้อได้')
@@ -59,7 +59,7 @@ export default {
           if (!userRaw) throw new Error('กรุณาเข้าสู่ระบบก่อนชำระเงิน')
           const token = JSON.parse(userRaw).token
 
-          const res = await fetch('http://localhost:8080/api/orders/checkout', {
+          const res = await fetch('https://book-production-e730.up.railway.app/api/orders/checkout', {
             method: 'POST',
             headers: { 'Authorization': `Bearer ${token}` }
           })

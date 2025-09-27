@@ -27,7 +27,7 @@ export default {
   async loadOrders() {
     this.isLoading = true
       try {
-        const res = await fetch(`http://localhost:8080/api/orders`, {
+        const res = await fetch(`https://book-production-e730.up.railway.app/api/orders`, {
           headers: this.getAuthHeader()
         })
         if (!res.ok) throw new Error('โหลดคำสั่งซื้อไม่สำเร็จ')
@@ -66,7 +66,7 @@ export default {
       if (!result.isConfirmed) return 
 
       try {
-        const res = await fetch(`http://localhost:8080/api/orders/${item.id}`, {
+        const res = await fetch(`https://book-production-e730.up.railway.app/api/orders/${item.id}`, {
           method: 'DELETE',
           headers: this.getAuthHeader()
         })
@@ -105,7 +105,7 @@ export default {
 
       try {
         for (const item of [...this.items]) {
-          await fetch(`http://localhost:8080/api/orders/${item.id}`, {
+          await fetch(`https://book-production-e730.up.railway.app/api/orders/${item.id}`, {
             method: 'DELETE',
             headers: this.getAuthHeader()
           })
@@ -131,7 +131,7 @@ export default {
 
     async updateOrder(item) {
       try {
-        await fetch(`http://localhost:8080/api/orders/${item.id}`, {
+        await fetch(`https://book-production-e730.up.railway.app/api/orders/${item.id}`, {
           method: 'PUT',
           headers: this.getAuthHeader(),
           body: JSON.stringify({

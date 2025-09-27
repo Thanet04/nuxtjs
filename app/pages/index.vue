@@ -57,7 +57,7 @@ export default {
 
       try {
         const pageIndex = Math.max(0, (this.page || 1) - 1)
-        const url = `http://localhost:8080/api/books?page=${pageIndex}&size=${this.size}`
+        const url = `https://book-production-e730.up.railway.app/api/books?page=${pageIndex}&size=${this.size}`
 
         const response = await fetch(url, { method: 'GET' })
         if (!response.ok) throw new Error('ไม่มีหนังสือ')
@@ -96,7 +96,7 @@ export default {
           price: book.price || 0
         }
 
-        const res = await fetch('http://localhost:8080/api/orders', {
+        const res = await fetch('https://book-production-e730.up.railway.app/api/orders', {
           method: 'POST',
           headers: this.getAuthHeader(),
           body: JSON.stringify(orderDTO)

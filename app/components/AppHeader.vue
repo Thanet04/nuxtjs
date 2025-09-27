@@ -69,7 +69,7 @@ export default {
     async loadCartCount() {
       if (!this.user?.token) return;
       try {
-        const res = await this.authFetch('http://localhost:8080/api/orders');
+        const res = await this.authFetch('https://book-production-e730.up.railway.app/api/orders');
         if (!res) return;
         if (!res.ok) throw new Error('ไม่สามารถโหลดคำสั่งซื้อได้');
 

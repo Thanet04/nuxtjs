@@ -28,7 +28,7 @@ export default {
     async loadBook() {
       const id = this.$route.params.id
       try {
-        const res = await fetch(`http://localhost:8080/api/books/${id}`,{
+        const res = await fetch(`https://book-production-e730.up.railway.app/api/books/${id}`,{
           method: 'GET',
           headers: this.getAuthHeader()
         })
@@ -97,7 +97,7 @@ export default {
           formData.append('file', this.coverFile)
         }
 
-        const response = await fetch(`http://localhost:8080/api/books/${this.book.id}`, {
+        const response = await fetch(`https://book-production-e730.up.railway.app/api/books/${this.book.id}`, {
           method: 'PUT',
           headers: this.getAuthHeader(false), 
           body: formData

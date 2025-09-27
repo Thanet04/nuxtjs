@@ -55,7 +55,7 @@ export default {
           formData.append('file', this.coverFile)
         }
 
-        const response = await fetch('http://localhost:8080/api/books', {
+        const response = await fetch('https://book-production-e730.up.railway.app/api/books', {
           method: 'POST',
           headers: this.getAuthHeader(),
           body: formData

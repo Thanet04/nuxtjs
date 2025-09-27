@@ -14,7 +14,7 @@ export default {
       this.message = '';
 
       try {
-        const response = await fetch('http://localhost:8080/api/user/reset-password', {
+        const response = await fetch('https://book-production-e730.up.railway.app/api/user/reset-password', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({ email: this.email ,password: this.password})

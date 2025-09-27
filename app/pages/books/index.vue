@@ -44,7 +44,7 @@ export default {
       this.error = null
       try {
         const pageIndex = Math.max(0, this.page - 1)
-        const response = await fetch(`http://localhost:8080/api/books/me?page=${pageIndex}&size=${this.size}`, {
+        const response = await fetch(`https://book-production-e730.up.railway.app/api/books/me?page=${pageIndex}&size=${this.size}`, {
           headers: this.getAuthHeader()
         })
         if (!response.ok) throw new Error('ไม่มีหนังสือ')
