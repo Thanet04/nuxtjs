@@ -8,7 +8,8 @@ export default {
       error: null,
       page: 1,
       size: 12,
-      total: 0
+      total: 0,
+      search: '' 
     }
   },
   computed: {
@@ -26,12 +27,20 @@ export default {
   watch: {
     page(newPage, oldPage) {
       if (newPage && newPage !== oldPage) {
-        this.loadBooks()
+        if (this.search) {
+          this.searchBooks()
+        } else {
+          this.loadBooks()
+        }
       }
     },
     size() {
       this.page = 1
-      this.loadBooks()
+      if (this.search) {
+        this.searchBooks()
+      } else {
+        this.loadBooks()
+      }
     }
   },
   mounted() {
@@ -54,29 +63,50 @@ export default {
     async loadBooks() {
       this.isLoading = true
       this.error = null
-
       try {
         const pageIndex = Math.max(0, (this.page || 1) - 1)
         const url = `https://book-production-e730.up.railway.app/api/books?page=${pageIndex}&size=${this.size}`
-
         const response = await fetch(url, { method: 'GET' })
         if (!response.ok) throw new Error('ไม่มีหนังสือ')
-
         const data = await response.json()
         this.books = data.books || data
         this.total = data.total || (Array.isArray(data) ? data.length : 0)
-
       } catch (err) {
+        this.books = []
+        this.total = 0
         this.error = err.message
-        this.$swal.fire({
-          title: 'เกิดข้อผิดพลาด!',
-          text: err.message,
-          icon: 'error',
-          confirmButtonText: 'OK',
-        });
       } finally {
         this.isLoading = false
       }
+    },
+    async searchBooks() {
+      if (!this.search) {
+        this.page = 1
+        this.loadBooks()
+        return
+      }
+      this.isLoading = true
+      this.error = null
+      try {
+        const pageIndex = Math.max(0, (this.page || 1) - 1)
+        const url = `https://book-production-e730.up.railway.app/api/books/search/title?title=${encodeURIComponent(this.search)}&page=${pageIndex}&size=${this.size}`
+        const response = await fetch(url, { method: 'GET' })
+        if (!response.ok) throw new Error('ไม่พบหนังสือที่ค้นหา')
+        const data = await response.json()
+        this.books = (data.books && data.books.length > 0) ? data.books : []
+        this.total = data.total || (Array.isArray(data.books) ? data.books.length : 0)
+      } catch (err) {
+        this.books = []
+        this.total = 0
+        this.error = err.message
+      } finally {
+        this.isLoading = false
+      }
+    },
+    clearSearch() {
+      this.search = ''
+      this.page = 1
+      this.loadBooks()
     },
     async addToCart(book) {
       if (!this.user) {
@@ -95,27 +125,24 @@ export default {
           quantity: 1,
           price: book.price || 0
         }
-
         const res = await fetch('https://book-production-e730.up.railway.app/api/orders', {
           method: 'POST',
           headers: this.getAuthHeader(),
           body: JSON.stringify(orderDTO)
         })
-
         if (!res.ok) throw new Error('ไม่สามารถเพิ่มลงตะกร้าได้')
-
         this.$swal.fire({
           title: 'เพิ่มลงตะกร้าเรียบร้อยแล้ว!',
           icon: 'success',
           confirmButtonText: 'OK',
-        });
+        })
         window.dispatchEvent(new Event('cart-updated'))
       } catch {
         this.$swal.fire({
           title: 'ไม่สามารถเพิ่มลงตะกร้าได้',
           icon: 'warning',
           confirmButtonText: 'OK',
-        });
+        })
       }
     }
   }
@@ -125,10 +152,35 @@ export default {
 <template>
   <div class="w-full h-full">
     <img src="../assets/img/bannerbook.png" class="w-full h-100 object-cover" alt="Banner Image">
+    
     <div class="w-full flex justify-center my-4">
       <h1 class="text-2xl font-bold">หนังสือ</h1>
     </div>
-    
+
+    <!-- Search bar -->
+    <div class="flex justify-center my-4 gap-3">
+      <input
+        v-model="search"
+        @keyup.enter="searchBooks"
+        type="text"
+        placeholder="ค้นหาหนังสือ..."
+        class="border rounded-lg px-4 py-2 w-1/2"
+      />
+      <button
+        @click="searchBooks"
+        class="px-4 py-2 bg-blue-500 text-white rounded-lg hover:bg-blue-600"
+      >
+        ค้นหา
+      </button>
+      <button
+        @click="clearSearch"
+        class="px-4 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700"
+      >
+        ล้าง
+      </button>
+    </div>
+
+    <!-- Books grid -->
     <div class="w-full grid grid-cols-2 md:grid-cols-4 gap-4 px-4 my-4">
       <div v-for="book in books" :key="book.id"
         class="bg-white rounded-xl shadow-lg overflow-hidden hover:shadow-2xl transition transform hover:-translate-y-1" >
@@ -162,6 +214,7 @@ export default {
       </div>
     </div>
 
+    <!-- Pagination -->
     <div class="flex flex-col items-center gap-2 my-4">
       <div class="flex justify-center gap-2">
         <button 
