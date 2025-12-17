@@ -44,7 +44,7 @@ export default {
       this.error = null
       try {
         const pageIndex = Math.max(0, this.page - 1)
-        const response = await fetch(`https://book-production-e730.up.railway.app/api/books/me?page=${pageIndex}&size=${this.size}`, {
+        const response = await fetch(`http://localhost:8080/api/books/me?page=${pageIndex}&size=${this.size}`, {
           headers: this.getAuthHeader()
         })
         if (!response.ok) throw new Error('ไม่มีหนังสือ')
@@ -69,18 +69,18 @@ export default {
 <template>
   <div class="max-w-6xl mx-auto p-6">
     <div class="flex items-center justify-between mb-6">
-      <h1 class="text-3xl font-bold text-white">📚 รายการหนังสือ</h1>
+      <h1 class="text-3xl font-bold text-zinc-900 dark:text-white">📚 รายการหนังสือ</h1>
       <router-link
         to="/books/create"
-        class="px-4 py-2 bg-green-500 text-white font-semibold rounded-lg shadow hover:bg-green-600 transition"
+        class="px-4 py-2 bg-primary-600 text-white font-semibold rounded-lg shadow hover:bg-primary-700 transition"
       >
         เพิ่มหนังสือ
       </router-link>
     </div>
 
-    <div v-if="isLoading" class="text-white text-center py-10">กำลังโหลดข้อมูล...</div>
+    <div v-if="isLoading" class="text-zinc-500 dark:text-zinc-400 text-center py-10">กำลังโหลดข้อมูล...</div>
     <div v-else-if="error" class="text-red-500 text-center py-10">{{ error }}</div>
-    <div v-else-if="books.length === 0" class="text-white text-center py-10">ยังไม่มีรายการหนังสือ</div>
+    <div v-else-if="books.length === 0" class="text-zinc-500 dark:text-zinc-400 text-center py-10">ยังไม่มีรายการหนังสือ</div>
 
     <div v-else>
       <!-- Books grid -->
@@ -88,28 +88,28 @@ export default {
         <div
           v-for="book in books"
           :key="book.id"
-          class="bg-white rounded-xl shadow-lg overflow-hidden hover:shadow-2xl transition transform hover:-translate-y-1"
+          class="bg-white dark:bg-zinc-900 border border-gray-200 dark:border-zinc-800 rounded-xl overflow-hidden hover:shadow-xl hover:border-primary-500/30 transition duration-300 transform hover:-translate-y-1"
         >
-          <div class="h-56 overflow-hidden">
+          <div class="h-56 overflow-hidden relative">
             <img
               v-if="book.imageUrl"
               :src="book.imageUrl"
               alt="cover"
               class="w-full h-full object-cover"
             />
-            <div v-else class="w-full h-full bg-gray-200 flex items-center justify-center text-gray-400 text-lg">
+            <div v-else class="w-full h-full bg-zinc-100 dark:bg-zinc-800 flex items-center justify-center text-zinc-400 text-lg">
               ไม่มีรูปปก
             </div>
           </div>
           <div class="p-4 flex flex-col gap-2">
-            <router-link :to="`/books/${book.id}`" class="text-lg font-bold text-gray-800 hover:text-blue-600">
+            <router-link :to="`/books/${book.id}`" class="text-lg font-bold text-zinc-900 dark:text-white hover:text-primary-600 line-clamp-1">
               {{ book.title }}
             </router-link>
-            <div class="text-sm text-gray-500">ผู้เขียน: {{ book.author || '-' }}</div>
-            <div class="text-sm font-medium text-gray-700">ราคา: {{ book.price || 0 }} บาท</div>
+            <div class="text-sm text-zinc-500 dark:text-zinc-400">ผู้เขียน: {{ book.author || '-' }}</div>
+            <div class="text-lg font-bold text-primary-600 dark:text-primary-400">ราคา: {{ book.price || 0 }} บาท</div>
             <div class="mt-4 flex gap-2">
               <router-link :to="`/books/${book.id}`"
-                class="flex-1 px-3 py-2 border border-gray-300 rounded-lg text-gray-700 hover:bg-gray-100 transition text-center" >
+                class="flex-1 px-3 py-2 border border-gray-300 dark:border-zinc-700 rounded-lg text-zinc-700 dark:text-zinc-300 hover:bg-zinc-50 dark:hover:bg-zinc-800 transition text-center" >
                 แก้ไข
               </router-link>
             </div>
@@ -118,12 +118,12 @@ export default {
       </div>
 
       <!-- Pagination -->
-      <div class="flex flex-col items-center gap-2 my-6">
+      <div class="flex flex-col items-center gap-4 my-6">
         <div class="flex justify-center gap-2">
           <button 
             @click="page = Math.max(1, page - 1)"
             :disabled="page <= 1"
-            class="px-4 py-2 bg-blue-500 text-white rounded disabled:opacity-50 disabled:cursor-not-allowed"
+            class="px-4 py-2 bg-white dark:bg-zinc-900 border border-gray-200 dark:border-zinc-800 text-zinc-700 dark:text-zinc-300 rounded-lg hover:bg-gray-50 dark:hover:bg-zinc-800 disabled:opacity-50 disabled:cursor-not-allowed transition"
           >
             ← Previous
           </button>
@@ -133,7 +133,7 @@ export default {
               v-for="p in pageCount" 
               :key="p"
               @click="page = p"
-              :class="[page === p ? 'bg-green-500 text-white' : 'bg-gray-200 text-gray-700 hover:bg-gray-300', 'px-3 py-2 rounded']"
+              :class="[page === p ? 'bg-primary-600 text-white border-primary-600' : 'bg-white dark:bg-zinc-900 text-zinc-700 dark:text-zinc-300 border-gray-200 dark:border-zinc-800 hover:bg-gray-50 dark:hover:bg-zinc-800', 'px-3 py-2 rounded-lg border transition']"
             >
               {{ p }}
             </button>
@@ -142,13 +142,13 @@ export default {
           <button 
             @click="page = Math.min(pageCount, page + 1)"
             :disabled="page >= pageCount"
-            class="px-4 py-2 bg-blue-500 text-white rounded disabled:opacity-50 disabled:cursor-not-allowed"
+            class="px-4 py-2 bg-white dark:bg-zinc-900 border border-gray-200 dark:border-zinc-800 text-zinc-700 dark:text-zinc-300 rounded-lg hover:bg-gray-50 dark:hover:bg-zinc-800 disabled:opacity-50 disabled:cursor-not-allowed transition"
           >
             Next →
           </button>
         </div>
 
-        <div class="text-gray-200">
+        <div class="text-zinc-500 dark:text-zinc-400 text-sm">
           <template v-if="total > 0">
             แสดง {{ startItem }}–{{ endItem }} จาก {{ total }} รายการ
           </template>

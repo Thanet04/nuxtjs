@@ -65,7 +65,7 @@ export default {
       this.error = null
       try {
         const pageIndex = Math.max(0, (this.page || 1) - 1)
-        const url = `https://book-production-e730.up.railway.app/api/books?page=${pageIndex}&size=${this.size}`
+        const url = `http://localhost:8080/api/books?page=${pageIndex}&size=${this.size}`
         const response = await fetch(url, { method: 'GET' })
         if (!response.ok) throw new Error('ไม่มีหนังสือ')
         const data = await response.json()
@@ -89,7 +89,7 @@ export default {
       this.error = null
       try {
         const pageIndex = Math.max(0, (this.page || 1) - 1)
-        const url = `https://book-production-e730.up.railway.app/api/books/search/title?title=${encodeURIComponent(this.search)}&page=${pageIndex}&size=${this.size}`
+        const url = `http://localhost:8080/api/books/search/title?title=${encodeURIComponent(this.search)}&page=${pageIndex}&size=${this.size}`
         const response = await fetch(url, { method: 'GET' })
         if (!response.ok) throw new Error('ไม่พบหนังสือที่ค้นหา')
         const data = await response.json()
@@ -125,7 +125,7 @@ export default {
           quantity: 1,
           price: book.price || 0
         }
-        const res = await fetch('https://book-production-e730.up.railway.app/api/orders', {
+        const res = await fetch('http://localhost:8080/api/orders', {
           method: 'POST',
           headers: this.getAuthHeader(),
           body: JSON.stringify(orderDTO)
@@ -150,62 +150,69 @@ export default {
 </script>
 
 <template>
-  <div class="w-full h-full">
-    <img src="../assets/img/bannerbook.png" class="w-full h-100 object-cover" alt="Banner Image">
+  <div class="w-full h-full pb-10">
+    <div class="relative w-full h-64 md:h-80 lg:h-96 bg-gray-900 overflow-hidden">
+      <!-- Gradient overlay instead of just image -->
+      <img src="../assets/img/bannerbook.png" class="w-full h-full object-cover opacity-60" alt="Banner Image">
+      <div class="absolute inset-0 bg-gradient-to-t from-zinc-950 to-transparent"></div>
+      <div class="absolute bottom-0 left-0 w-full p-8 flex justify-center">
+         <h1 class="text-4xl md:text-5xl font-bold text-white tracking-tight drop-shadow-md">Explore Our Collection</h1>
+      </div>
+    </div>
     
-    <div class="w-full flex justify-center my-4">
-      <h1 class="text-2xl font-bold">หนังสือ</h1>
+    <div class="w-full flex justify-center my-8">
+      <h2 class="text-3xl font-bold text-zinc-900 dark:text-white">Books</h2>
     </div>
 
     <!-- Search bar -->
-    <div class="flex justify-center my-4 gap-3">
+    <div class="flex justify-center my-6 px-4 gap-3 max-w-4xl mx-auto">
       <input
         v-model="search"
         @keyup.enter="searchBooks"
         type="text"
         placeholder="ค้นหาหนังสือ..."
-        class="border rounded-lg px-4 py-2 w-1/2"
+        class="border border-gray-300 dark:border-zinc-700 bg-white dark:bg-zinc-900 text-zinc-900 dark:text-white rounded-xl px-4 py-2 w-full focus:outline-none focus:ring-2 focus:ring-primary-500 transition"
       />
       <button
         @click="searchBooks"
-        class="px-4 py-2 bg-blue-500 text-white rounded-lg hover:bg-blue-600"
+        class="px-6 py-2 bg-primary-600 text-white font-medium rounded-xl hover:bg-primary-700 transition shadow-sm"
       >
         ค้นหา
       </button>
       <button
         @click="clearSearch"
-        class="px-4 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700"
+        class="px-6 py-2 bg-zinc-200 dark:bg-zinc-800 text-zinc-700 dark:text-gray-300 font-medium rounded-xl hover:bg-zinc-300 dark:hover:bg-zinc-700 transition"
       >
         ล้าง
       </button>
     </div>
 
     <!-- Books grid -->
-    <div class="w-full grid grid-cols-2 md:grid-cols-4 gap-4 px-4 my-4">
+    <div class="w-full grid grid-cols-2 md:grid-cols-4 lg:grid-cols-5 gap-6 px-4 md:px-8 my-8">
       <div v-for="book in books" :key="book.id"
-        class="bg-white rounded-xl shadow-lg overflow-hidden hover:shadow-2xl transition transform hover:-translate-y-1" >
-        <div class="h-56 overflow-hidden">
+        class="bg-white dark:bg-zinc-900 border border-gray-200 dark:border-zinc-800 rounded-2xl overflow-hidden hover:shadow-xl hover:border-primary-500/30 transition duration-300 group" >
+        <div class="h-64 overflow-hidden relative">
           <img
             v-if="book.imageUrl"
             :src="book.imageUrl"
             alt="cover"
-            class="w-full h-full object-cover"
+            class="w-full h-full object-cover group-hover:scale-105 transition duration-500"
           />
-          <div v-else class="w-full h-full bg-gray-200 flex items-center justify-center text-gray-400 text-lg">
+          <div v-else class="w-full h-full bg-zinc-100 dark:bg-zinc-800 flex items-center justify-center text-zinc-400 text-lg">
             ไม่มีรูปปก
           </div>
         </div>
         <div class="p-4 flex flex-col gap-2">
-          <router-link :to="`/books/${book.id}`" class="text-lg font-bold text-gray-800 hover:text-blue-600">
+          <router-link :to="`/books/${book.id}`" class="text-lg font-bold text-zinc-900 dark:text-white hover:text-primary-500 line-clamp-1" :title="book.title">
             {{ book.title }}
           </router-link>
-          <div class="text-sm text-gray-500">ผู้เขียน: {{ book.author || '-' }}</div>
-          <div class="text-sm text-gray-500">{{ book.description || '-' }}</div>
-          <div class="text-sm font-medium text-gray-700">ราคา: {{ book.price || 0 }} บาท</div>
-          <div class="mt-4 flex gap-2">
+          <div class="text-sm text-zinc-500 dark:text-zinc-400 line-clamp-1">ผู้เขียน: {{ book.author || '-' }}</div>
+          <div class="text-sm text-zinc-500 dark:text-zinc-400 line-clamp-2 h-10">{{ book.description || '-' }}</div>
+          <div class="text-lg font-bold text-primary-600 dark:text-primary-400 mt-1">{{ book.price || 0 }} บาท</div>
+          <div class="mt-3">
             <button
               @click="addToCart(book)"
-              class="flex-1 px-3 py-2 bg-blue-500 text-white font-medium rounded-lg hover:bg-blue-600 transition"
+              class="w-full py-2 bg-zinc-900 dark:bg-white text-white dark:text-zinc-900 font-medium rounded-lg hover:bg-primary-600 dark:hover:bg-primary-400 dark:hover:text-white transition-colors"
             >
               ใส่ตะกร้า
             </button>
@@ -215,12 +222,12 @@ export default {
     </div>
 
     <!-- Pagination -->
-    <div class="flex flex-col items-center gap-2 my-4">
+    <div class="flex flex-col items-center gap-4 my-8">
       <div class="flex justify-center gap-2">
         <button 
           @click="page = Math.max(1, page - 1)"
           :disabled="page <= 1"
-          class="px-4 py-2 bg-blue-500 text-white rounded disabled:opacity-50 disabled:cursor-not-allowed"
+          class="px-4 py-2 bg-white dark:bg-zinc-900 border border-gray-200 dark:border-zinc-800 text-zinc-700 dark:text-zinc-300 rounded-lg hover:bg-gray-50 dark:hover:bg-zinc-800 disabled:opacity-50 disabled:cursor-not-allowed transition"
         >
           ← Previous
         </button>
@@ -230,7 +237,7 @@ export default {
             v-for="p in pageCount" 
             :key="p"
             @click="page = p"
-            :class="[page === p ? 'bg-green-500 text-white' : 'bg-gray-200 text-gray-700 hover:bg-gray-300', 'px-3 py-2 rounded']"
+            :class="[page === p ? 'bg-primary-600 text-white border-primary-600' : 'bg-white dark:bg-zinc-900 text-zinc-700 dark:text-zinc-300 border-gray-200 dark:border-zinc-800 hover:bg-gray-50 dark:hover:bg-zinc-800', 'px-3 py-2 rounded-lg border transition']"
           >
             {{ p }}
           </button>
@@ -239,13 +246,13 @@ export default {
         <button 
           @click="page = Math.min(pageCount, page + 1)"
           :disabled="page >= pageCount"
-          class="px-4 py-2 bg-blue-500 text-white rounded disabled:opacity-50 disabled:cursor-not-allowed"
+          class="px-4 py-2 bg-white dark:bg-zinc-900 border border-gray-200 dark:border-zinc-800 text-zinc-700 dark:text-zinc-300 rounded-lg hover:bg-gray-50 dark:hover:bg-zinc-800 disabled:opacity-50 disabled:cursor-not-allowed transition"
         >
           Next →
         </button>
       </div>
 
-      <div class="text-gray-500">
+      <div class="text-zinc-500 dark:text-zinc-400 text-sm">
         <template v-if="total > 0">
           แสดง {{ startItem }}–{{ endItem }} จาก {{ total }} รายการ
         </template>

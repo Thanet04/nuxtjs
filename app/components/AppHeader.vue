@@ -69,7 +69,7 @@ export default {
     async loadCartCount() {
       if (!this.user?.token) return;
       try {
-        const res = await this.authFetch('https://book-production-e730.up.railway.app/api/orders');
+        const res = await this.authFetch('http://localhost:8080/api/orders');
         if (!res) return;
         if (!res.ok) throw new Error('ไม่สามารถโหลดคำสั่งซื้อได้');
 
@@ -116,39 +116,40 @@ export default {
 </script>
 
 <template>
-  <nav class="w-full flex items-center justify-between py-4 px-4">
+  <nav class="w-full flex items-center justify-between py-4 px-4 border-b border-gray-200 dark:border-zinc-800 bg-white/80 dark:bg-zinc-950/80 backdrop-blur-md sticky top-0 z-50">
     <!-- Logo -->
     <div class="flex items-center gap-3">
       <img src="https://github.com/nuxt.png" width="32" height="32" alt="logo" />
-      <NuxtLink to="/" class="text-2xl font-bold cursor-pointer">NuxtJS</NuxtLink>
+      <NuxtLink to="/" class="text-2xl font-bold cursor-pointer text-zinc-900 dark:text-white">NuxtJS</NuxtLink>
     </div>
 
     <!-- ถ้า login แล้ว -->
     <div v-if="user" class="relative flex items-center gap-3">
       <!-- Cart Button -->
-      <UButton to="/cart" variant="ghost" size="md" class="relative">
+      <UButton to="/cart" variant="ghost" color="gray" size="md" class="relative">
         🛒
         <span v-if="cartCount > 0" class="absolute -top-1 -right-1 bg-red-500 text-white text-xs rounded-full px-1 min-w-[18px] text-center">{{ cartCount }}</span>
       </UButton>
 
       <UAvatar ref="avatarBtn" :src="user.avatar || 'https://i.pravatar.cc/150?u=' + user.email"
-        size="md" class="cursor-pointer" @click="toggleMenu" />
+        size="md" class="cursor-pointer ring-2 ring-transparent hover:ring-primary-500 transition" @click="toggleMenu" />
 
       <!-- Dropdown Menu -->
-      <div v-if="showMenu" ref="menuDropdown" class="absolute top-full right-0 mt-2 flex flex-col gap-2 bg-white text-black p-2 rounded shadow-lg w-24" >
-        <UButton class="hover:bg-gray-200 cursor-pointer" color="blue" variant="ghost" size="md" to="/profile">โปรไฟล์</UButton>
-        <UButton class="hover:bg-gray-200 cursor-pointer" color="blue" variant="ghost" size="md" to="/books">หนังสือฉัน</UButton>
-        <UButton class="hover:bg-gray-200 cursor-pointer" color="red" variant="ghost" size="md" @click="logout">Logout</UButton>
+      <div v-if="showMenu" ref="menuDropdown" class="absolute top-full right-0 mt-2 flex flex-col gap-1 bg-white dark:bg-zinc-900 border border-gray-200 dark:border-zinc-800 p-2 rounded-xl shadow-xl w-32 z-50" >
+        <UButton class="cursor-pointer justify-start" color="gray" variant="ghost" size="sm" to="/profile">โปรไฟล์</UButton>
+        <UButton class="cursor-pointer justify-start" color="gray" variant="ghost" size="sm" to="/books">หนังสือฉัน</UButton>
+        <hr class="border-gray-200 dark:border-zinc-800 my-1"/>
+        <UButton class="cursor-pointer justify-start" color="red" variant="ghost" size="sm" @click="logout">Logout</UButton>
       </div>
     </div>
 
     <div v-else class="flex gap-2">
-      <UButton to="/cart" variant="ghost" size="md" class="relative">
+      <UButton to="/cart" variant="ghost" color="gray" size="md" class="relative">
         🛒
         <span v-if="cartCount > 0" class="absolute -top-1 -right-1 bg-red-500 text-white text-xs rounded-full px-1 min-w-[18px] text-center">{{ cartCount }}</span>
       </UButton>
-      <UButton variant="ghost" size="md" to="/signin">Sign in</UButton>
-      <UButton variant="ghost" size="md" to="/signup">Sign up</UButton>
+      <UButton variant="ghost" color="gray" size="md" to="/signin">Sign in</UButton>
+      <UButton variant="solid" color="primary" size="md" to="/signup">Sign up</UButton>
     </div>
   </nav>
 </template>

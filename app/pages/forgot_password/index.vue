@@ -2,7 +2,7 @@
 export default {
   data() {
     return {
-      email: '',
+      username: '',
       password: '',
       loading: false,
       message: ''
@@ -14,10 +14,10 @@ export default {
       this.message = '';
 
       try {
-        const response = await fetch('https://book-production-e730.up.railway.app/api/user/reset-password', {
+        const response = await fetch('http://localhost:8080/api/user/reset-password', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ email: this.email ,password: this.password})
+          body: JSON.stringify({ username: this.username ,password: this.password})
         })
 
         const message = await response.text() 
@@ -50,20 +50,20 @@ export default {
           <h1 class="text-3xl font-bold bg-gradient-to-r from-gray-900 to-gray-600 bg-clip-text text-transparent">
             Forgot Password
           </h1>
-          <p class="text-gray-500 mt-2">Enter your email and new password</p>
+          <p class="text-gray-500 mt-2">Enter your username and new password</p>
         </div>
 
         <!-- Form -->
         <form @submit.prevent="forgotPassword">
-          <!-- Email -->
+          <!-- username -->
           <div class="mb-6">
-            <label for="email" class="block text-sm font-medium text-gray-700">Email</label>
+            <label for="username" class="block text-sm font-medium text-gray-700">Username</label>
             <input 
-              type="email" 
-              id="email" 
-              v-model="email"
+              type="username" 
+              id="username" 
+              v-model="username"
               class="w-full px-4 py-2 text-black border border-gray-300 rounded-md focus:outline-none focus:border-blue-500" 
-              placeholder="Enter your email" 
+              placeholder="Enter your Username" 
               required
             >
           </div>
